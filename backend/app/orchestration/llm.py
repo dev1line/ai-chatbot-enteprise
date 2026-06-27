@@ -39,11 +39,34 @@ class LLMProvider(ABC):
     async def generate(self, system: str, user: str) -> str: ...
 
 
+def _synthesize_from_context(user: str) -> str | None:
+    """Build a deterministic answer from the RAG CONTEXT block (local happy path)."""
+    if "CONTEXT:" not in user or "QUESTION:" not in user:
+        return None
+    context_block = user.split("CONTEXT:")[1].split("QUESTION:")[0].strip()
+    question = user.split("QUESTION:")[1].split("\n\nAnswer")[0].strip()
+    if not context_block:
+        return None
+    blocks = [b.strip() for b in context_block.split("\n\n") if b.strip()]
+    if not blocks:
+        return None
+    refs = ", ".join(f"[{i + 1}]" for i in range(min(3, len(blocks))))
+    summary = " ".join(
+        block.split(")", 1)[-1].strip()[:200] for block in blocks[:2]
+    )
+    return (
+        f"Based on the retrieved documents {refs}: {summary} "
+        f"(responding to: {question})"
+    )
+
+
 class MockLLM(LLMProvider):
     async def generate(self, system: str, user: str) -> str:
+        synthesized = _synthesize_from_context(user)
+        if synthesized:
+            return synthesized
         return (
-            "[MOCK] (Azure not enabled) This is a mocked answer based on the retrieved context. "
-            "Set LLM_PROVIDER=azure_openai to use a real model."
+            "[MOCK] (Azure not enabled) Set LLM_PROVIDER=azure_openai to use a real model."
         )
 
 

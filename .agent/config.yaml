@@ -87,3 +87,14 @@ rules:
   - .agent/rules/02-coding-standards.md
   - .agent/rules/03-task-management.md
   - .agent/rules/04-security-guardrails.md
+  - .agent/rules/05-memory-changelogs.md
+
+# Memory changelogs (per-task context for Cursor hooks)
+memory:
+  root: ".agent/memory"
+  changelogs_dir: ".agent/memory/changelogs"
+  summaries_dir: ".agent/memory/summaries"
+  cli: ".agent/memory/bin/memory-cli"
+  hooks_config: ".cursor/hooks.json"
+  summary_entry_threshold: 12
+  summary_char_threshold: 6000

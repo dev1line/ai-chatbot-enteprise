@@ -1,0 +1,37 @@
+{
+  "version": 1,
+  "hooks": {
+    "sessionStart": [
+      {
+        "command": ".cursor/hooks/memory-session-start.sh"
+      }
+    ],
+    "beforeSubmitPrompt": [
+      {
+        "command": ".cursor/hooks/memory-before-prompt.sh",
+        "matcher": "UserPromptSubmit"
+      }
+    ],
+    "afterFileEdit": [
+      {
+        "command": ".cursor/hooks/memory-after-edit.sh"
+      }
+    ],
+    "preCompact": [
+      {
+        "command": ".cursor/hooks/memory-pre-compact.sh"
+      }
+    ],
+    "stop": [
+      {
+        "command": ".cursor/hooks/memory-stop.sh",
+        "loop_limit": 3
+      }
+    ],
+    "sessionEnd": [
+      {
+        "command": ".cursor/hooks/memory-session-end.sh"
+      }
+    ]
+  }
+}

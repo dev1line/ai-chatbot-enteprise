@@ -2,6 +2,7 @@ import pytest
 
 from app.rag.embeddings import LocalHashingEmbedding
 from app.rag.ingestion import chunk_text, load_text
+from app.rag.retriever import index_chunks, retrieve
 from app.rag.vector_store import InMemoryVectorStore, VectorRecord
 
 
@@ -19,6 +20,17 @@ def test_load_text_metadata():
     assert chunks[0].metadata["doc_id"] == "SEC-1"
     assert chunks[0].metadata["version"] == "v2.1"
     assert chunks[0].metadata["type"] == "text"
+
+
+@pytest.mark.asyncio
+async def test_index_chunks_idempotent_reindex(rag_settings):
+    chunks = load_text(b"KMS rotation 90 days", "SEC-1", "v2.1", "sec.md")
+    first = await index_chunks(chunks)
+    second = await index_chunks(chunks)
+    assert first == second == len(chunks)
+    hits = await retrieve("KMS rotation", version="v2.1")
+    assert hits
+    assert hits[0].payload["doc_id"] == "SEC-1"
 
 
 @pytest.mark.asyncio
@@ -42,6 +54,5 @@ async def test_memory_vector_store_search_and_version_filter():
     assert hits
     assert hits[0].payload["doc_id"] == "SEC"
 
-    # version filter
     hits_v1 = await store.search(qv, top_k=5, version="v1.0")
     assert all(h.payload["version"] == "v1.0" for h in hits_v1)

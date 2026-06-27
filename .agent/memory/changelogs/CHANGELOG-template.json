@@ -1,0 +1,12 @@
+{
+  "task_id": "PH<NN>-T<n>",
+  "phase": "<NN>",
+  "status": "todo",
+  "changelog_state": "active",
+  "session_id": null,
+  "conversation_id": null,
+  "created_at": "<ISO8601>",
+  "updated_at": "<ISO8601>",
+  "entries": [],
+  "context_notes": []
+}

@@ -171,3 +171,9 @@ def get_vector_store() -> VectorStore:
     else:
         _store = InMemoryVectorStore()
     return _store
+
+
+def reset_vector_store() -> None:
+    """Clear the cached store instance (used in tests for isolation)."""
+    global _store
+    _store = None

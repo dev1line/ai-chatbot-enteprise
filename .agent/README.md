@@ -9,6 +9,7 @@ It answers 4 questions:
 2. **What to build (specifications)?** → `specs/`
 3. **How far along, and who is doing what (progress + assignee/git)?** → `tasks/` + `progress/`
 4. **Shared configuration?** → `config.yaml`
+5. **Per-task memory context (changelogs)?** → `memory/`
 
 ---
 
@@ -18,12 +19,17 @@ It answers 4 questions:
 .agent/
 ├── README.md                ← you are reading this
 ├── config.yaml              ← shared configuration (phase, branch, git identity)
+├── memory/                  ← per-task changelogs + summaries (Cursor hooks)
+│   ├── changelogs/          ← one JSON file per task (PH<NN>-T<n>)
+│   ├── summaries/           ← compressed context for agent injection
+│   └── bin/memory-cli       ← CLI used by .cursor/hooks/*
 ├── rules/                   ← mandatory rules & instructions
 │   ├── 00-global.md         ← core principles (Zero Data Leak, local-first…)
 │   ├── 01-git-workflow.md   ← branch / commit / PR / assignee mapping via git
 │   ├── 02-coding-standards.md
 │   ├── 03-task-management.md ← how to use spec + task + update progress
-│   └── 04-security-guardrails.md
+│   ├── 04-security-guardrails.md
+│   └── 05-memory-changelogs.md ← per-task memory + accept/discard reconcile
 ├── specs/                   ← per-phase specifications (WHAT & WHY)  *.spec.md
 │   ├── SPEC-template.md
 │   └── phase-00..09 *.spec.md
