@@ -1,0 +1,59 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider             = "prisma-client-py"
+  interface            = "asyncio"
+  recursive_type_depth = 5
+}
+
+enum Role {
+  ADMIN
+  ENGINEER
+  VIEWER
+}
+
+model User {
+  id            String         @id @default(cuid())
+  email         String         @unique
+  hashedPassword String
+  fullName      String?
+  role          Role           @default(VIEWER)
+  isActive      Boolean        @default(true)
+  createdAt     DateTime       @default(now())
+  conversations Conversation[]
+}
+
+model Conversation {
+  id        String    @id @default(cuid())
+  title     String?
+  userId    String
+  user      User      @relation(fields: [userId], references: [id])
+  createdAt DateTime  @default(now())
+  messages  Message[]
+}
+
+model Message {
+  id             String       @id @default(cuid())
+  conversationId String
+  conversation   Conversation @relation(fields: [conversationId], references: [id])
+  role           String // "user" | "assistant" | "system"
+  content        String
+  citations      Json?
+  createdAt      DateTime     @default(now())
+}
+
+model Document {
+  id          String   @id @default(cuid())
+  docId       String
+  version     String   @default("v1")
+  source      String
+  type        String // text | pdf | image | excel
+  contentHash String?
+  releasedAt  DateTime @default(now())
+  metadata    Json?
+
+  @@unique([docId, version])
+}
