@@ -7,9 +7,9 @@ ROLE_RANK = {"VIEWER": 1, "ENGINEER": 2, "ADMIN": 3}
 
 
 def require_role(min_role: str):
-    """Dependency factory: yêu cầu user có vai trò >= min_role.
+    """Dependency factory: require the user to have a role >= min_role.
 
-    Thiết kế để tái dùng ở tầng tool/action (Phase 3) — mọi action kiểm tra scope user.
+    Designed to be reused at the tool/action layer (Phase 3) — every action checks the user's scope.
     """
     required_rank = ROLE_RANK[min_role]
 

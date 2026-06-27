@@ -50,13 +50,13 @@ export function ChatConsole({ role, onLogout }: { role: string; onLogout: () => 
           <span className="role-badge">{role}</span>
         </div>
         <button className="link" onClick={logout}>
-          Đăng xuất
+          Sign out
         </button>
       </header>
 
       <div className="messages">
         {messages.length === 0 && (
-          <div className="empty">Hãy đặt câu hỏi về tài liệu đã release...</div>
+          <div className="empty">Ask a question about released documents...</div>
         )}
         {messages.map((m, i) => (
           <div key={i} className={`msg msg-${m.role}`}>
@@ -64,7 +64,7 @@ export function ChatConsole({ role, onLogout }: { role: string; onLogout: () => 
             {m.role === "assistant" && m.citations && <Citations citations={m.citations} />}
           </div>
         ))}
-        {loading && <div className="msg msg-assistant"><div className="bubble">Đang trả lời…</div></div>}
+        {loading && <div className="msg msg-assistant"><div className="bubble">Replying…</div></div>}
       </div>
 
       {error && <div className="error chat-error">{error}</div>}
@@ -73,11 +73,11 @@ export function ChatConsole({ role, onLogout }: { role: string; onLogout: () => 
         <input
           value={input}
           onChange={(e) => setInput(e.target.value)}
-          placeholder="Nhập câu hỏi…"
+          placeholder="Type your question…"
           disabled={loading}
         />
         <button type="submit" disabled={loading || !input.trim()}>
-          Gửi
+          Send
         </button>
       </form>
     </div>

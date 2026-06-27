@@ -1,24 +1,24 @@
 # Backend — AI Chatbot Enterprise
 
-FastAPI + Prisma (PostgreSQL). **LOCAL-FIRST**: chạy qua Docker, mặc định `LLM_PROVIDER=mock` nên không cần Azure.
+FastAPI + Prisma (PostgreSQL). **LOCAL-FIRST**: runs via Docker, and defaults to `LLM_PROVIDER=mock` so Azure is not required.
 
-## Chạy nhanh (khuyến nghị: Docker từ root)
+## Quick start (recommended: Docker from root)
 
 ```bash
-# tại thư mục gốc dự án
-make dev-up        # khởi động postgres + qdrant + backend + frontend
+# from the project root directory
+make dev-up        # start postgres + qdrant + backend + frontend
 ```
 
 Backend: http://localhost:8000 · Docs: http://localhost:8000/docs · Health: http://localhost:8000/health
 
-## Chạy local (không Docker)
+## Run locally (without Docker)
 
 ```bash
 cd backend
 python -m venv .venv && source .venv/bin/activate
 pip install -r requirements-dev.txt
 prisma generate --schema=prisma/schema.prisma
-# cần 1 Postgres đang chạy + DATABASE_URL
+# requires a running Postgres + DATABASE_URL
 prisma db push --schema=prisma/schema.prisma
 uvicorn app.main:app --reload
 ```
@@ -26,16 +26,16 @@ uvicorn app.main:app --reload
 ## Test
 
 ```bash
-pytest -q          # test health/security/rbac không cần DB
+pytest -q          # health/security/rbac tests that do not require a DB
 ```
 
-## Flag môi trường
+## Environment flags
 
 - `APP_ENV`: `local|docker|staging|prod`
 - `LLM_PROVIDER`: `mock` (local) | `azure_openai` (Phase 2/7)
 - `VECTOR_DB_PROVIDER`: `memory|qdrant|milvus|pinecone`
 
-## Cấu trúc
+## Structure
 
 ```
 app/

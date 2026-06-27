@@ -27,7 +27,9 @@ class MessageRepository:
             "conversation": {"connect": {"id": conversation_id}},
         }
         if citations is not None:
-            data["citations"] = citations
+            from prisma import Json
+
+            data["citations"] = Json(citations)
         return await get_db().message.create(data=data)
 
     async def list_for_conversation(self, conversation_id: str) -> list[Any]:

@@ -36,7 +36,7 @@ export function Login({ onLoggedIn }: { onLoggedIn: (role: string) => void }) {
           <input value={email} onChange={(e) => setEmail(e.target.value)} type="email" required />
         </label>
         <label>
-          Mật khẩu
+          Password
           <input
             value={password}
             onChange={(e) => setPassword(e.target.value)}
@@ -46,14 +46,14 @@ export function Login({ onLoggedIn }: { onLoggedIn: (role: string) => void }) {
         </label>
         {error && <div className="error">{error}</div>}
         <button type="submit" disabled={loading}>
-          {loading ? "Đang xử lý..." : mode === "login" ? "Đăng nhập" : "Đăng ký"}
+          {loading ? "Processing..." : mode === "login" ? "Sign in" : "Sign up"}
         </button>
       </form>
       <button
         className="link"
         onClick={() => setMode(mode === "login" ? "register" : "login")}
       >
-        {mode === "login" ? "Chưa có tài khoản? Đăng ký" : "Đã có tài khoản? Đăng nhập"}
+        {mode === "login" ? "Don't have an account? Sign up" : "Already have an account? Sign in"}
       </button>
     </div>
   );

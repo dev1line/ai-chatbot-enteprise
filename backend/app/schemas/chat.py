@@ -16,7 +16,7 @@ class Citation(BaseModel):
 class ChatRequest(BaseModel):
     message: str = Field(min_length=1)
     conversation_id: str | None = None
-    version: str | None = None  # lọc theo version tài liệu (immutable corpus)
+    version: str | None = None  # filter by document version (immutable corpus)
 
 
 class ChatResponse(BaseModel):

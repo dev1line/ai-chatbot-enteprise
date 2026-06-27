@@ -1,4 +1,4 @@
-# 01 — Kiến trúc hệ thống (Architecture)
+# 01 — System Architecture
 
 ## 1. High-level Architecture
 
@@ -33,25 +33,25 @@
    └─────────────────────┘    └─────────────────────────┘   └───────────────────────┘
 ```
 
-## 2. Luồng xử lý chính
+## 2. Main Processing Flows
 
 ### A. Text query (RAG)
-1. UI gửi câu hỏi → FastAPI (auth + RBAC).
-2. Orchestrator embed query (ada-002) → retrieve top-k từ Vector DB.
-3. Prompt = context + câu hỏi → Azure OpenAI.
-4. Trả về answer + **citations** (doc id, page).
+1. UI sends the question → FastAPI (auth + RBAC).
+2. Orchestrator embeds the query (ada-002) → retrieves top-k from the Vector DB.
+3. Prompt = context + question → Azure OpenAI.
+4. Returns the answer + **citations** (doc id, page).
 
 ### B. Actionable query (Function Calling)
-1. LLM nhận tool schema (text_to_sql, internal_api_call).
-2. LLM quyết định gọi tool → tham số được validate (RBAC + sandbox).
-3. Tool thực thi (chỉ SELECT / API cho phép) → kết quả trả lại LLM → tóm tắt.
+1. The LLM receives the tool schema (text_to_sql, internal_api_call).
+2. The LLM decides to call a tool → parameters are validated (RBAC + sandbox).
+3. The tool executes (only allowed SELECT / API) → result is returned to the LLM → summarized.
 
 ### C. Voice
-1. UI ghi audio (Hold-to-Talk) → gửi blob.
-2. Whisper STT → text → luồng A/B.
-3. Answer → HuggingFace TTS → audio stream về client.
+1. UI records audio (Hold-to-Talk) → sends the blob.
+2. Whisper STT → text → flow A/B.
+3. Answer → HuggingFace TTS → audio stream back to the client.
 
-## 3. Cấu trúc thư mục dự án (đề xuất triển khai)
+## 3. Project Directory Structure (proposed implementation)
 
 ```
 ai-chatbot-enterprise/
@@ -76,19 +76,19 @@ ai-chatbot-enterprise/
 │   │   ├── hooks/              # useAudio, useStream
 │   │   └── api/
 │   └── package.json
-├── docker-compose.yml          # LOCAL-FIRST: full stack chạy local (postgres + vector db + backend + frontend)
+├── docker-compose.yml          # LOCAL-FIRST: full stack runs locally (postgres + vector db + backend + frontend)
 ├── Makefile                    # dev-up / dev-down / test (local) · infra-* (Azure, Phase 7)
-├── .env.example                # flag APP_ENV + provider swappable
-├── infra/                      # IaC Azure (terraform, private link) — TRIỂN KHAI SAU (Phase 7)
+├── .env.example                # APP_ENV flag + swappable providers
+├── infra/                      # Azure IaC (terraform, private link) — DEPLOYED LATER (Phase 7)
 └── docs/
 ```
 
-> Lưu ý: `docker-compose.yml` ở root phục vụ dev local (Phase 0–6, không cần Azure). Thư mục `infra/` chỉ dùng ở Phase 7 sau khi dev xong chức năng.
+> Note: `docker-compose.yml` at the root serves local development (Phase 0–6, no Azure needed). The `infra/` directory is only used in Phase 7, after functionality development is complete.
 
-## 4. Nguyên tắc thiết kế
+## 4. Design Principles
 
-- **Separation of concerns**: API ↔ Orchestration ↔ Repository tách bạch.
-- **Repository Pattern**: cô lập truy xuất DB, dễ test/mock.
-- **Tool guardrails**: mọi tool có schema + validator + RBAC check.
-- **Observability-first**: log trace mỗi request (query, retrieved docs, tool calls, latency).
-- **Resilience**: Circuit Breaker quanh Azure OpenAI; fallback graceful.
+- **Separation of concerns**: API ↔ Orchestration ↔ Repository are cleanly separated.
+- **Repository Pattern**: isolates DB access, easy to test/mock.
+- **Tool guardrails**: every tool has a schema + validator + RBAC check.
+- **Observability-first**: log a trace for every request (query, retrieved docs, tool calls, latency).
+- **Resilience**: Circuit Breaker around Azure OpenAI; graceful fallback.

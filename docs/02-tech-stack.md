@@ -1,51 +1,51 @@
-# 02 — Tech Stack & Lý do lựa chọn
+# 02 — Tech Stack & Rationale
 
-| Layer | Công nghệ | Lý do |
+| Layer | Technology | Rationale |
 |---|---|---|
-| Language | Python 3.11+ | Hệ sinh thái AI/ML mạnh nhất |
-| Web framework | FastAPI | Async, type-safe (Pydantic), streaming, docs tự động |
-| ORM | Prisma (prisma-client-py) | Type-safe, migration tốt, tách session logic |
-| Database | PostgreSQL | Quan hệ vững, JSONB, đủ cho báo cáo Text-to-SQL |
-| Orchestration | LangChain | Điều phối RAG + tool calling, nhiều integration |
-| Embeddings | Azure OpenAI text-embedding-ada-002 | Chất lượng cao, cùng hệ Azure (compliance) |
-| Doc parsing (multimodal) | unstructured, PyMuPDF/pdfplumber, openpyxl/pandas | Trích xuất PDF/Excel/Word có cấu trúc, layout-aware |
-| OCR | Tesseract / Azure AI Document Intelligence | Đọc PDF scan & text trong ảnh (compliance khi dùng Azure) |
-| Vision | Azure OpenAI vision / CLIP-class embeddings | Mô tả & tìm kiếm trên hình ảnh, diagram |
-| Hybrid search | BM25 (Postgres/Elastic) + dense embeddings + cross-encoder rerank | Bắt cả từ khoá chính xác lẫn ngữ nghĩa, tăng precision |
-| Vector DB | Pinecone (managed) / Milvus (self-host) | Metadata filter + namespace theo version (immutable corpus) |
+| Language | Python 3.11+ | The strongest AI/ML ecosystem |
+| Web framework | FastAPI | Async, type-safe (Pydantic), streaming, automatic docs |
+| ORM | Prisma (prisma-client-py) | Type-safe, good migrations, separates session logic |
+| Database | PostgreSQL | Solid relational model, JSONB, sufficient for Text-to-SQL reporting |
+| Orchestration | LangChain | Orchestrates RAG + tool calling, many integrations |
+| Embeddings | Azure OpenAI text-embedding-ada-002 | High quality, same Azure ecosystem (compliance) |
+| Doc parsing (multimodal) | unstructured, PyMuPDF/pdfplumber, openpyxl/pandas | Structured, layout-aware extraction of PDF/Excel/Word |
+| OCR | Tesseract / Azure AI Document Intelligence | Read scanned PDFs & text in images (compliant when using Azure) |
+| Vision | Azure OpenAI vision / CLIP-class embeddings | Describe & search across images and diagrams |
+| Hybrid search | BM25 (Postgres/Elastic) + dense embeddings + cross-encoder rerank | Captures both exact keywords and semantics, improves precision |
+| Vector DB | Pinecone (managed) / Milvus (self-host) | Metadata filtering + namespace by version (immutable corpus) |
 | LLM | Azure OpenAI (GPT-4 class) | Private VNet, enterprise compliance, no-train |
-| STT | Whisper | Mã nguồn mở, đa ngôn ngữ, chính xác |
-| TTS | Hugging Face TTS | Mã nguồn mở, tối ưu chi phí, tự host |
-| Frontend | React (hoặc Vue) + TypeScript | Hệ sinh thái lớn, dễ tuyển dụng |
-| Audio | Web Audio API / MediaRecorder | Ghi âm Hold-to-Talk trên trình duyệt |
-| Testing | PyTest | Chuẩn de-facto cho Python |
-| LLM Eval | Ragas / TruLens | Đo faithfulness, answer relevancy, hallucination |
-| Resilience | Circuit Breaker (pybreaker), Retry (tenacity) | Chịu lỗi khi Azure timeout |
+| STT | Whisper | Open source, multilingual, accurate |
+| TTS | Hugging Face TTS | Open source, cost-optimized, self-hosted |
+| Frontend | React (or Vue) + TypeScript | Large ecosystem, easy to hire for |
+| Audio | Web Audio API / MediaRecorder | Hold-to-Talk recording in the browser |
+| Testing | PyTest | The de-facto standard for Python |
+| LLM Eval | Ragas / TruLens | Measure faithfulness, answer relevancy, hallucination |
+| Resilience | Circuit Breaker (pybreaker), Retry (tenacity) | Fault tolerance when Azure times out |
 | Security | Azure Private Link, VNet, Key Vault | Zero Data Leak, secret management |
 | Future | LangGraph / AutoGen | Multi-agent orchestration |
-| Issue tracking | JIRA REST API v3 (Atlassian) | Tự động hoá tạo/cập nhật task cho BA, quản lý change request |
+| Issue tracking | JIRA REST API v3 (Atlassian) | Automate creating/updating tasks for BAs, manage change requests |
 
-## Quy ước môi trường
+## Environment Conventions
 
-- Secrets qua **Azure Key Vault** / biến môi trường, KHÔNG hardcode.
-- `.env.example` mô tả mọi biến cần thiết.
-- Tách config theo môi trường: `dev`, `staging`, `prod`.
+- Secrets via **Azure Key Vault** / environment variables, NEVER hardcoded.
+- `.env.example` describes every required variable.
+- Separate config by environment: `dev`, `staging`, `prod`.
 
-## Nguyên tắc triển khai: LOCAL-FIRST / DOCKER-FIRST
+## Implementation Principle: LOCAL-FIRST / DOCKER-FIRST
 
-> Quan trọng: **Phải chạy được local (qua Docker) trước**. Toàn bộ development & test chức năng (Phase 0–6) chạy trên **Docker Compose** ở máy dev. **Hạ tầng Azure (Phase 7) chỉ triển khai SAU khi dev xong chức năng.**
+> Important: **It must run locally (via Docker) first.** All development & functional testing (Phase 0–6) runs on **Docker Compose** on the developer's machine. **Azure infrastructure (Phase 7) is only deployed AFTER functionality development is complete.**
 
-- Phải có **flag môi trường** trong ENV để phân biệt chế độ chạy:
+- There must be an **environment flag** in ENV to distinguish the run mode:
   - `APP_ENV=local | docker | staging | prod`
-  - Provider **swappable qua ENV** để local không phụ thuộc Azure bắt buộc.
-- Local mode dùng **alternatives chạy được offline/trong Docker** (Postgres container, Milvus/Qdrant container, Tesseract OCR, Whisper local, HF TTS local). Azure chỉ bật khi `APP_ENV` ở `staging/prod` hoặc cấu hình rõ ràng.
-- Mọi script/Makefile target tách biệt: `make dev-up` (local docker) vs `make infra-*` (Azure — chạy sau).
+  - Providers **swappable via ENV** so local does not strictly depend on Azure.
+- Local mode uses **alternatives that run offline/in Docker** (Postgres container, Milvus/Qdrant container, Tesseract OCR, Whisper local, HF TTS local). Azure is only enabled when `APP_ENV` is `staging/prod` or explicitly configured.
+- Every script/Makefile target is separated: `make dev-up` (local docker) vs `make infra-*` (Azure — run later).
 
-### Provider abstraction (chọn qua ENV)
+### Provider abstraction (selected via ENV)
 
-| Biến | Local/Docker | Azure (sau) |
+| Variable | Local/Docker | Azure (later) |
 |---|---|---|
-| `LLM_PROVIDER` | `azure_openai` (có thể trỏ key dev) hoặc mock | `azure_openai` (private VNet) |
+| `LLM_PROVIDER` | `azure_openai` (can point to a dev key) or mock | `azure_openai` (private VNet) |
 | `EMBEDDING_PROVIDER` | `azure_openai` / local | `azure_openai` |
 | `VECTOR_DB_PROVIDER` | `milvus` / `qdrant` (container) | `pinecone` / `milvus` |
 | `OCR_PROVIDER` | `tesseract` (local) | `azure_doc_intelligence` |
@@ -53,7 +53,7 @@
 | `TTS_PROVIDER` | `hf_local` | `hf_local` |
 | `SECRETS_PROVIDER` | `env` (.env) | `azure_key_vault` |
 
-## Biến môi trường chính (ví dụ)
+## Main Environment Variables (example)
 
 ```
 # --- Run mode / flags ---
@@ -66,7 +66,7 @@ OCR_PROVIDER=tesseract        # tesseract | azure_doc_intelligence
 STT_PROVIDER=whisper_local
 TTS_PROVIDER=hf_local
 
-# --- Azure (chỉ bật ở staging/prod hoặc khi cấu hình) ---
+# --- Azure (only enabled in staging/prod or when configured) ---
 AZURE_OPENAI_ENDPOINT=
 AZURE_OPENAI_API_KEY=
 AZURE_OPENAI_DEPLOYMENT_CHAT=

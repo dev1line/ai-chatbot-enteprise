@@ -1,7 +1,7 @@
 from fastapi import APIRouter, HTTPException, status
 
 from app.core.deps import CurrentUserDep
-from app.orchestration.llm import get_llm_provider
+from app.orchestration.orchestrator import answer_query
 from app.repositories.conversation_repository import (
     ConversationRepository,
     MessageRepository,
@@ -27,18 +27,18 @@ async def chat(payload: ChatRequest, current: CurrentUserDep) -> ChatResponse:
 
     await messages.add(conversation.id, role="user", content=payload.message)
 
-    result = await get_llm_provider().chat(payload.message, version=payload.version)
+    answer, citations = await answer_query(payload.message, version=payload.version)
 
-    citations_data = [c.model_dump() for c in result.citations]
+    citations_data = [c.model_dump() for c in citations]
     await messages.add(
         conversation.id,
         role="assistant",
-        content=result.answer,
+        content=answer,
         citations=citations_data or None,
     )
 
     return ChatResponse(
         conversation_id=conversation.id,
-        answer=result.answer,
-        citations=result.citations,
+        answer=answer,
+        citations=citations,
     )

@@ -1,0 +1,61 @@
+# Assignee list + git identity (source for the `Assignee` field in *.tasks.md)
+# Add a member: create a new entry with a short `id` matching git user.name / user.email.
+# Check command: git config user.name && git config user.email
+
+assignees:
+  - id: stephen
+    name: "Stephen Sang"
+    git_name: "Stephen Sang"
+    git_email: "nguyentuanquangsang1999@gmail.com"
+    role: "lead"            # lead | backend | frontend | devops | qa | ba
+    active: true
+
+  - id: andy
+    name: "Andy-8594"
+    git_name: "Andy-8594"
+    git_email: ""
+    role: "backend"
+    active: true
+
+  - id: hung-pb
+    name: "Phạm Bảo Hưng"
+    git_name: "hung-pb"
+    git_email: ""
+    role: "backend"
+    active: true
+
+  - id: linhk1102
+    name: "LinhK1102"
+    git_name: "LinhK1102"
+    git_email: ""
+    role: "backend"
+    active: true
+
+  - id: linhx
+    name: "Nguyen Dinh Linh"
+    git_name: "linhx"
+    git_email: ""
+    role: "backend"
+    active: true
+
+  - id: sonngb
+    name: "SonNgB"
+    git_name: "SonNgB"
+    git_email: ""
+    role: "backend"
+    active: true
+
+  - id: trungtruongpham
+    name: "Phạm Trung Trường"
+    git_name: "trungtruongpham"
+    git_email: ""
+    role: "backend"
+    active: true
+
+  # Template for adding a new person:
+  # - id: <short_id>
+  #   name: "<Full name>"
+  #   git_name: "<git user.name>"
+  #   git_email: "<git user.email>"
+  #   role: "<role>"
+  #   active: true

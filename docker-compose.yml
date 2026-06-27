@@ -1,5 +1,5 @@
-# LOCAL-FIRST: full stack chạy local, KHÔNG cần Azure.
-# `make dev-up` để khởi động.
+# LOCAL-FIRST: the full stack runs locally, Azure is NOT required.
+# Use `make dev-up` to start.
 
 services:
   postgres:

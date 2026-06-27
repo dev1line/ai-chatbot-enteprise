@@ -1,0 +1,89 @@
+# Shared configuration for the .agent system
+# This is metadata for agents/humans and tooling to quickly read the project state.
+
+project:
+  name: "Enterprise AI Chatbot — Actionable RAG"
+  repo: "ai-chatbot-enteprise"
+  default_branch: "main"
+  language: "en"            # primary documentation language
+  principle: "LOCAL-FIRST / DOCKER-FIRST; Zero Data Leak"
+
+# Branch & commit conventions (details: rules/01-git-workflow.md)
+git:
+  branch_pattern: "<type>/PH<NN>-T<n>-<slug>"   # e.g.: feat/PH01-T3-repository-pattern
+  commit_convention: "conventional-commits"
+  commit_task_trailer: "Task: PH<NN>-T<n>"      # required to trace the assignee by task
+  require_signoff: false
+
+# Valid statuses for tasks & phases
+status_values: [todo, in_progress, blocked, review, done]
+
+# Roadmap by phase (kept in sync with prompts/ and specs/)
+phases:
+  - id: "00"
+    slug: foundation
+    title: "Foundation & Project Setup"
+    spec: ".agent/specs/phase-00-foundation.spec.md"
+    tasks: ".agent/tasks/phase-00-foundation.tasks.md"
+    status: todo
+  - id: "01"
+    slug: backend-core
+    title: "Backend Core & Architecture"
+    spec: ".agent/specs/phase-01-backend-core.spec.md"
+    tasks: ".agent/tasks/phase-01-backend-core.tasks.md"
+    status: todo
+  - id: "02"
+    slug: rag-vectordb
+    title: "Multimodal RAG (Released/Immutable)"
+    spec: ".agent/specs/phase-02-rag-vectordb.spec.md"
+    tasks: ".agent/tasks/phase-02-rag-vectordb.tasks.md"
+    status: todo
+  - id: "03"
+    slug: actionable-rag
+    title: "Actionable RAG (Function Calling)"
+    spec: ".agent/specs/phase-03-actionable-rag.spec.md"
+    tasks: ".agent/tasks/phase-03-actionable-rag.tasks.md"
+    status: todo
+  - id: "04"
+    slug: voice-pipeline
+    title: "Voice Pipeline (STT + TTS)"
+    spec: ".agent/specs/phase-04-voice-pipeline.spec.md"
+    tasks: ".agent/tasks/phase-04-voice-pipeline.tasks.md"
+    status: todo
+  - id: "05"
+    slug: frontend-ui
+    title: "Frontend / UI Quality"
+    spec: ".agent/specs/phase-05-frontend-ui.spec.md"
+    tasks: ".agent/tasks/phase-05-frontend-ui.tasks.md"
+    status: todo
+  - id: "06"
+    slug: testing-robustness
+    title: "Testing & Robustness"
+    spec: ".agent/specs/phase-06-testing-robustness.spec.md"
+    tasks: ".agent/tasks/phase-06-testing-robustness.tasks.md"
+    status: todo
+  - id: "07"
+    slug: security-deployment
+    title: "Security & Deployment"
+    spec: ".agent/specs/phase-07-security-deployment.spec.md"
+    tasks: ".agent/tasks/phase-07-security-deployment.tasks.md"
+    status: todo
+  - id: "08"
+    slug: multi-agent-future
+    title: "Multi-Agent & Future Enhancements"
+    spec: ".agent/specs/phase-08-multi-agent-future.spec.md"
+    tasks: ".agent/tasks/phase-08-multi-agent-future.tasks.md"
+    status: todo
+  - id: "09"
+    slug: jira-requirement-agent
+    title: "Requirement Analysis & JIRA Automation"
+    spec: ".agent/specs/phase-09-jira-requirement-agent.spec.md"
+    tasks: ".agent/tasks/phase-09-jira-requirement-agent.tasks.md"
+    status: todo
+
+rules:
+  - .agent/rules/00-global.md
+  - .agent/rules/01-git-workflow.md
+  - .agent/rules/02-coding-standards.md
+  - .agent/rules/03-task-management.md
+  - .agent/rules/04-security-guardrails.md

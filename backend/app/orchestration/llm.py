@@ -1,56 +1,85 @@
-"""LLM provider abstraction (swappable qua ENV `LLM_PROVIDER`).
+"""LLM provider abstraction (swappable via ENV `LLM_PROVIDER`).
 
-LOCAL-FIRST: mặc định `mock` để chạy local không cần Azure key.
-Phase 2+ sẽ thay/RAG, Phase 7 trỏ Azure private VNet.
+- `mock`         : mocked responses (local, Azure not required).
+- `azure_openai` : Azure OpenAI (OpenAI v1 format: base_url .../openai/v1).
+
+LOCAL-FIRST: defaults to `mock`. Set LLM_PROVIDER=azure_openai + OPENAI_* to use real Azure.
 """
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
 
+from tenacity import (
+    retry,
+    retry_if_exception_type,
+    stop_after_attempt,
+    wait_exponential,
+)
+
 from app.core.config import Settings, get_settings
-from app.schemas.chat import Citation
+from app.core.logging import get_logger
+
+logger = get_logger(__name__)
 
 
-class LLMResult:
-    def __init__(self, answer: str, citations: list[Citation] | None = None) -> None:
-        self.answer = answer
-        self.citations = citations or []
+def _transient_errors() -> tuple[type[Exception], ...]:
+    """Only retry transient errors (network/timeout/rate-limit), do NOT retry 400."""
+    import openai
+
+    return (
+        openai.APIConnectionError,
+        openai.APITimeoutError,
+        openai.RateLimitError,
+        openai.InternalServerError,
+    )
 
 
 class LLMProvider(ABC):
     @abstractmethod
-    async def chat(self, message: str, version: str | None = None) -> LLMResult: ...
+    async def generate(self, system: str, user: str) -> str: ...
 
 
 class MockLLM(LLMProvider):
-    """Trả lời giả lập, dùng cho dev local & test. Chưa có RAG (Phase 2)."""
-
-    async def chat(self, message: str, version: str | None = None) -> LLMResult:
-        answer = (
-            "[MOCK] Đã nhận câu hỏi: "
-            f"'{message}'. RAG multimodal sẽ được nối ở Phase 2 "
-            "(trả lời kèm citations từ kho tài liệu released)."
+    async def generate(self, system: str, user: str) -> str:
+        return (
+            "[MOCK] (Azure not enabled) This is a mocked answer based on the retrieved context. "
+            "Set LLM_PROVIDER=azure_openai to use a real model."
         )
-        return LLMResult(answer=answer, citations=[])
 
 
 class AzureOpenAILLM(LLMProvider):
-    """Placeholder cho Azure OpenAI (bật khi LLM_PROVIDER=azure_openai).
-
-    Triển khai gọi thật ở Phase 2 (RAG) / Phase 7 (private VNet).
-    """
-
     def __init__(self, settings: Settings) -> None:
-        self.settings = settings
+        from openai import AsyncOpenAI
 
-    async def chat(self, message: str, version: str | None = None) -> LLMResult:
-        raise NotImplementedError(
-            "AzureOpenAILLM sẽ được hiện thực ở Phase 2. Dùng LLM_PROVIDER=mock cho local."
+        self.settings = settings
+        self._client = AsyncOpenAI(
+            api_key=settings.openai_api_key,
+            base_url=settings.openai_base_url,
+            default_query={"api-version": settings.openai_api_version},
         )
+
+    @retry(
+        stop=stop_after_attempt(3),
+        wait=wait_exponential(multiplier=1, min=1, max=8),
+        retry=retry_if_exception_type(_transient_errors()),
+        reraise=True,
+    )
+    async def generate(self, system: str, user: str) -> str:
+        resp = await self._client.chat.completions.create(
+            model=self.settings.model_name,
+            messages=[
+                {"role": "system", "content": system},
+                {"role": "user", "content": user},
+            ],
+            max_completion_tokens=self.settings.completion_token_reserve
+            + self.settings.max_context_tokens,
+        )
+        return resp.choices[0].message.content or ""
 
 
 def get_llm_provider() -> LLMProvider:
     settings = get_settings()
-    if settings.llm_provider == "azure_openai":
+    if settings.llm_provider == "azure_openai" and settings.openai_api_key:
+        logger.info("Using AzureOpenAILLM (model=%s)", settings.model_name)
         return AzureOpenAILLM(settings)
     return MockLLM()

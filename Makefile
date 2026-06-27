@@ -2,15 +2,15 @@
 
 help:
 	@echo "LOCAL-FIRST targets:"
-	@echo "  make dev-up       - khởi động full stack local (docker compose)"
-	@echo "  make dev-down     - dừng & xoá container"
-	@echo "  make dev-build    - build lại images"
-	@echo "  make logs         - xem logs"
-	@echo "  make test         - chạy backend tests trong container"
+	@echo "  make dev-up       - start the full local stack (docker compose)"
+	@echo "  make dev-down     - stop & remove containers"
+	@echo "  make dev-build    - rebuild images"
+	@echo "  make logs         - view logs"
+	@echo "  make test         - run backend tests in the container"
 	@echo "  make fmt          - format (black + ruff --fix)"
 	@echo "  make lint         - lint (ruff)"
 	@echo ""
-	@echo "INFRA targets (Phase 7 - triển khai SAU khi dev xong):"
+	@echo "INFRA targets (Phase 7 - deployed AFTER development is complete):"
 	@echo "  make infra-plan   - (placeholder) terraform plan"
 	@echo "  make infra-apply  - (placeholder) terraform apply"
 
@@ -39,9 +39,9 @@ fmt:
 lint:
 	cd backend && ruff check .
 
-# --- Phase 7: Azure infra (chưa triển khai ở giai đoạn dev) ---
+# --- Phase 7: Azure infra (not deployed during the development stage) ---
 infra-plan:
-	@echo "[infra] Phase 7 — sẽ triển khai sau khi dev xong chức năng."
+	@echo "[infra] Phase 7 — will be deployed after feature development is complete."
 
 infra-apply:
-	@echo "[infra] Phase 7 — sẽ triển khai sau khi dev xong chức năng."
+	@echo "[infra] Phase 7 — will be deployed after feature development is complete."

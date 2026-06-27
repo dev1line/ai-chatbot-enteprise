@@ -1,101 +1,101 @@
-# 00 — Phân tích dự án (Project Analysis)
+# 00 — Project Analysis
 
-## 1. Bối cảnh & vấn đề
+## 1. Context & Problem
 
-Doanh nghiệp (đặc biệt mô hình **ODC**) có:
-- Khối lượng lớn tài liệu nghiệp vụ, runbook, policy bảo mật thay đổi liên tục.
-- Kỹ sư tốn nhiều thời gian tra cứu thủ công → chậm phản ứng sự cố, giảm năng suất vận hành.
-- Yêu cầu bảo mật cao: **Zero Data Leak** — không để dữ liệu nội bộ rò rỉ ra dịch vụ public.
+Enterprises (especially the **ODC** model) have:
+- A large volume of business documentation, runbooks, and security policies that change continuously.
+- Engineers spend a lot of time on manual lookups → slow incident response, reduced operational productivity.
+- High security requirements: **Zero Data Leak** — no internal data must leak to public services.
 
-## 2. Phân tích theo STAR
+## 2. Analysis per STAR
 
 ### Situation
-Tra cứu thủ công chậm, kiến thức phân mảnh trong nhiều hệ thống (wiki, PDF, DB, monitoring).
+Manual lookups are slow; knowledge is fragmented across many systems (wiki, PDF, DB, monitoring).
 
 ### Task
-Trợ lý AI nội bộ:
-- Tra cứu tài liệu (RAG) + **thực thi hành động** (gọi API, query DB).
-- Hỗ trợ cả **text** và **voice**.
-- Bảo mật tuyệt đối.
+An internal AI assistant that:
+- Looks up documents (RAG) + **executes actions** (calls APIs, queries the DB).
+- Supports both **text** and **voice**.
+- Maintains absolute security.
 
-### Action (đề xuất kỹ thuật)
-- Backend Python + FastAPI, tách tầng rõ ràng (Repository Pattern).
-- Azure OpenAI làm LLM (compliance-friendly, private VNet).
-- RAG: nạp tài liệu → Vector DB; LangChain điều phối luồng.
-- Function Calling: cho LLM truy cập DB báo cáo / internal API có kiểm soát.
-- STT/TTS bằng mã nguồn mở (Whisper, HuggingFace) để tối ưu chi phí.
+### Action (technical proposal)
+- Python + FastAPI backend, with clear layer separation (Repository Pattern).
+- Azure OpenAI as the LLM (compliance-friendly, private VNet).
+- RAG: ingest documents → Vector DB; LangChain orchestrates the flow.
+- Function Calling: gives the LLM controlled access to the reporting DB / internal APIs.
+- STT/TTS using open source (Whisper, HuggingFace) to optimize cost.
 
-### Result (KPI mục tiêu)
-| Metric | Mục tiêu |
+### Result (target KPIs)
+| Metric | Target |
 |---|---|
-| Thời gian tra cứu | Giảm ~80% |
-| Time-to-resolution sự cố | Giảm rõ rệt |
-| API latency (P95) | < 2s (text), streaming cho voice |
+| Lookup time | ~80% reduction |
+| Incident time-to-resolution | Markedly reduced |
+| API latency (P95) | < 2s (text), streaming for voice |
 | RAG faithfulness (Ragas) | > 0.85 |
-| Tỷ lệ "ảo giác" (hallucination) | Đo & giảm tối thiểu |
+| Hallucination rate | Measured & minimized |
 
-## 3. Điểm đột phá — "Actionable RAG"
+## 3. The Breakthrough — "Actionable RAG"
 
-RAG truyền thống chỉ **đọc** tài liệu. Dự án này thêm khả năng **hành động**:
-- Sinh & thực thi SQL (Text-to-SQL) có sandbox + chỉ `SELECT`.
-- Gọi internal API (check container/server, KMS, WAF…).
-- Mô hình lai (Hybrid): Azure OpenAI cho reasoning, HuggingFace cho TTS để tiết kiệm.
+Traditional RAG only **reads** documents. This project adds the ability to **act**:
+- Generate & execute SQL (Text-to-SQL) within a sandbox and restricted to `SELECT`.
+- Call internal APIs (check container/server, KMS, WAF…).
+- Hybrid model: Azure OpenAI for reasoning, HuggingFace for TTS to save cost.
 
-## 3b. Mục đích chính (cập nhật) — Tìm kiếm tài liệu Released đa phương thức
+## 3b. Primary Purpose (updated) — Multimodal Search of Released Documents
 
-Trọng tâm cốt lõi của hệ thống là **tìm kiếm chính xác trên kho tài liệu đã RELEASED / BẤT BIẾN** (immutable, versioned):
-- Tài liệu đã release **không thay đổi** → đảm bảo nguồn tra cứu ổn định, có version, có thể audit.
-- **Đa phương thức (Multimodal)**: index & tìm kiếm đầy đủ trên **hình ảnh** (sơ đồ, screenshot, diagram), **PDF** (kể cả scan), **Excel/CSV** (bảng số liệu), không chỉ text/markdown.
-- Mục tiêu: tra cứu "đầy đủ hơn" — câu trả lời tổng hợp được từ nhiều loại định dạng + trích dẫn đúng nguồn (file, trang, sheet/cell, vùng ảnh).
+The core focus of the system is **accurate search over the corpus of RELEASED / IMMUTABLE documents** (immutable, versioned):
+- Released documents **do not change** → ensures a stable lookup source that is versioned and auditable.
+- **Multimodal**: index & search fully across **images** (diagrams, screenshots), **PDFs** (including scans), and **Excel/CSV** (data tables), not just text/markdown.
+- Goal: enable "more complete" lookups — answers synthesized from multiple formats + accurate source citations (file, page, sheet/cell, image region).
 
-> Đây là nền tảng cho mọi tính năng phía trên: chất lượng tìm kiếm multimodal quyết định chất lượng trả lời và độ tin cậy.
+> This is the foundation for every feature above: the quality of multimodal search determines the quality of answers and their trustworthiness.
 
-## 3c. Tầm nhìn xa — AI Agent tự động hoá phân tích Requirement & JIRA
+## 3c. Long-term Vision — AI Agent for Automating Requirement Analysis & JIRA
 
-Hướng phát triển dài hạn: hệ thống **AI Agent** hỗ trợ **BA (Business Analyst)** và **quản lý Change Request**:
-- Tự động **phân tích tài liệu requirement** của khách hàng (SRS, BRD, email, spec, file đính kèm đa định dạng).
-- Bóc tách thành **user stories / tasks / sub-tasks**, ước lượng, gắn acceptance criteria.
-- **Tạo & cập nhật task trên JIRA** tự động (qua Atlassian/JIRA API) với human-in-the-loop xác nhận.
-- Phát hiện & quản lý **Change Request**: so sánh requirement mới vs đã release (dùng kho immutable ở mục 3b), highlight thay đổi, đánh giá impact, đề xuất cập nhật backlog.
+Long-term direction: an **AI Agent** system that supports **BAs (Business Analysts)** and **Change Request management**:
+- Automatically **analyze customer requirement documents** (SRS, BRD, emails, specs, multi-format attachments).
+- Break them down into **user stories / tasks / sub-tasks**, estimate, and attach acceptance criteria.
+- **Create & update JIRA tasks** automatically (via the Atlassian/JIRA API) with human-in-the-loop confirmation.
+- Detect & manage **Change Requests**: compare new requirements vs. released ones (using the immutable corpus in section 3b), highlight changes, assess impact, and propose backlog updates.
 
-## 4. Use Cases chi tiết
+## 4. Detailed Use Cases
 
-1. **Multimodal Document Search (cốt lõi)**
-   - "Sơ đồ kiến trúc module thanh toán bản release v2.1 nằm ở đâu?" → tìm trong hình ảnh/PDF → trả lời + trích dẫn (file, trang, vùng ảnh).
-   - "Số liệu throughput trong file benchmark Q2.xlsx là bao nhiêu?" → đọc bảng Excel → trả lời + trích dẫn (sheet, cell range).
+1. **Multimodal Document Search (core)**
+   - "Where is the architecture diagram of the payment module in release v2.1?" → search in images/PDFs → answer + cite (file, page, image region).
+   - "What is the throughput figure in the benchmark file Q2.xlsx?" → read the Excel table → answer + cite (sheet, cell range).
 2. **Ops/Security Bot**
-   - "Trạng thái container payment-service hiện tại?" → gọi API → trả lời.
-   - "Policy về KMS key rotation là gì?" → RAG + citation.
+   - "What is the current status of the payment-service container?" → call API → answer.
+   - "What is the KMS key rotation policy?" → RAG + citation.
 3. **Text-to-SQL Report Bot**
-   - "Doanh thu tuần này theo từng dự án?" → sinh SQL → query PostgreSQL → đọc kết quả (voice).
-4. **BA / Requirement Automation (tầm nhìn)**
-   - Upload tài liệu requirement khách hàng → agent phân tích → đề xuất danh sách task → BA duyệt → tạo trên JIRA.
-   - "So với bản release trước, requirement này thay đổi gì?" → so sánh với kho immutable → liệt kê change request + impact.
+   - "This week's revenue by project?" → generate SQL → query PostgreSQL → read the result (voice).
+4. **BA / Requirement Automation (vision)**
+   - Upload a customer requirement document → the agent analyzes → proposes a task list → BA reviews → create in JIRA.
+   - "Compared to the previous release, what changed in this requirement?" → compare against the immutable corpus → list change requests + impact.
 
-## 5. Rủi ro & Giải pháp
+## 5. Risks & Solutions
 
-| Rủi ro | Giải pháp |
+| Risk | Solution |
 |---|---|
-| Data leak qua public LLM | Azure OpenAI private VNet + Private Link, no-train policy |
-| SQL injection / lệnh phá hoại (DROP/DELETE) | Whitelist `SELECT`, parameterized, schema-aware validation, unit test chặt |
-| Hallucination | Citations bắt buộc, Ragas/TruLens đánh giá, guardrails |
-| Azure timeout / downtime | Circuit Breaker + Retry + Fallback message chuẩn |
-| Quyền hạn ("ảo giác quyền") | RBAC ở tầng tool, mọi action kiểm tra scope user |
-| Latency voice | Streaming response, index Vector DB tối ưu |
-| Tài liệu released bị sửa/lệch version | Kho immutable + checksum/hash + versioning; chỉ ingest qua quy trình release |
-| OCR/hình ảnh kém chất lượng (scan mờ) | Vision model + OCR fallback, gắn confidence score, đánh dấu nguồn rủi ro |
-| Bảng Excel phức tạp (merge cell, công thức) | Trích xuất có cấu trúc + giữ tham chiếu sheet/cell, ưu tiên giá trị đã tính |
-| Agent tạo task JIRA sai/thừa | Human-in-the-loop bắt buộc duyệt trước khi ghi; dry-run + audit |
+| Data leak via public LLM | Azure OpenAI private VNet + Private Link, no-train policy |
+| SQL injection / destructive commands (DROP/DELETE) | Whitelist `SELECT`, parameterized queries, schema-aware validation, strict unit tests |
+| Hallucination | Mandatory citations, Ragas/TruLens evaluation, guardrails |
+| Azure timeout / downtime | Circuit Breaker + Retry + standard fallback message |
+| Permissions ("permission hallucination") | RBAC at the tool layer; every action checks the user's scope |
+| Voice latency | Streaming responses, optimized Vector DB indexing |
+| Released documents edited / version drift | Immutable corpus + checksum/hash + versioning; ingest only through the release process |
+| Poor-quality OCR/images (blurry scans) | Vision model + OCR fallback, attach a confidence score, flag risky sources |
+| Complex Excel tables (merged cells, formulas) | Structured extraction + preserve sheet/cell references, prioritize computed values |
+| Agent creates wrong/extra JIRA tasks | Mandatory human-in-the-loop review before writing; dry-run + audit |
 
-## 6. Phạm vi & Định hướng mở rộng
+## 6. Scope & Expansion Direction
 
-- **Core/MVP**: Phase 0–5 (RAG **multimodal trên kho released**, Function Calling, Voice, UI).
+- **Core/MVP**: Phase 0–5 (**multimodal RAG over the released corpus**, Function Calling, Voice, UI).
 - **Hardening**: Phase 6–7 (Testing, Security, Deploy).
 - **Future**:
   - Phase 8 — Multi-Agent (LangGraph: SQL agent / Doc agent / Log agent), ODC English Trainer.
-  - Phase 9 — AI Agent phân tích requirement khách hàng + tự động hoá JIRA + quản lý Change Request (hỗ trợ BA).
+  - Phase 9 — AI Agent for analyzing customer requirements + JIRA automation + Change Request management (BA support).
 
-## 7. Tài liệu liên quan
+## 7. Related Documents
 
-- [`03-document-search-strategy.md`](03-document-search-strategy.md) — Chiến lược tìm kiếm multimodal trên kho immutable.
-- [`04-jira-automation-vision.md`](04-jira-automation-vision.md) — Tầm nhìn AI Agent requirement + JIRA.
+- [`03-document-search-strategy.md`](03-document-search-strategy.md) — Multimodal search strategy over the immutable corpus.
+- [`04-jira-automation-vision.md`](04-jira-automation-vision.md) — AI Agent requirement + JIRA vision.

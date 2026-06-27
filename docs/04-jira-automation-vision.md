@@ -1,72 +1,72 @@
-# 04 — Tầm nhìn: AI Agent phân tích Requirement & tự động hoá JIRA
+# 04 — Vision: AI Agent for Requirement Analysis & JIRA Automation
 
-> Định hướng dài hạn: hệ thống AI Agent hỗ trợ **BA (Business Analyst)** phân tích tài liệu requirement khách hàng, tạo task trên **JIRA**, và quản lý **Change Request**.
+> Long-term direction: an AI Agent system that supports **BAs (Business Analysts)** in analyzing customer requirement documents, creating tasks in **JIRA**, and managing **Change Requests**.
 
-## 1. Mục tiêu
+## 1. Objectives
 
-- Giảm công sức thủ công của BA khi đọc/bóc tách requirement.
-- Chuẩn hoá việc tạo backlog (epic → story → task → sub-task) trên JIRA.
-- Theo dõi & quản lý **change request** dựa trên kho tài liệu released (immutable).
-- Luôn có **human-in-the-loop**: agent đề xuất, người duyệt mới ghi.
+- Reduce the BA's manual effort in reading/breaking down requirements.
+- Standardize backlog creation (epic → story → task → sub-task) in JIRA.
+- Track & manage **change requests** based on the released (immutable) document corpus.
+- Always keep a **human-in-the-loop**: the agent proposes, a reviewer approves before anything is written.
 
-## 2. Luồng nghiệp vụ (high-level)
+## 2. Business Flow (high-level)
 
 ```
-[Tài liệu requirement KH]  (PDF/Word/Excel/ảnh — đa định dạng)
-        │  (dùng pipeline multimodal ở docs/03)
+[Customer requirement document]  (PDF/Word/Excel/image — multi-format)
+        │  (uses the multimodal pipeline in docs/03)
         ▼
 [Requirement Analyzer Agent]
-   - Trích xuất yêu cầu, ràng buộc, acceptance criteria
-   - Phát hiện mơ hồ / thiếu thông tin → đặt câu hỏi cho BA
+   - Extract requirements, constraints, acceptance criteria
+   - Detect ambiguity / missing information → ask the BA questions
         ▼
 [Work Breakdown Agent]
-   - Bóc tách Epic → Story → Task → Sub-task
-   - Gắn estimate, priority, acceptance criteria, labels
+   - Break down Epic → Story → Task → Sub-task
+   - Attach estimate, priority, acceptance criteria, labels
         ▼
-[BA Review (human-in-the-loop)]  ← BẮT BUỘC duyệt/chỉnh
+[BA Review (human-in-the-loop)]  ← MANDATORY review/edit
         ▼
 [JIRA Sync Agent]
-   - Tạo/cập nhật issue qua JIRA REST API
-   - Map field (project, issuetype, epic link, components)
+   - Create/update issues via the JIRA REST API
+   - Map fields (project, issuetype, epic link, components)
         ▼
 [Change Request Manager]
-   - So sánh requirement mới vs bản released (immutable corpus)
-   - Liệt kê thay đổi, đánh giá impact, đề xuất cập nhật issue
+   - Compare new requirements vs. the released (immutable corpus)
+   - List changes, assess impact, propose issue updates
 ```
 
-## 3. Các Agent đề xuất (mở rộng Multi-Agent ở Phase 8)
+## 3. Proposed Agents (extending Multi-Agent in Phase 8)
 
-| Agent | Trách nhiệm |
+| Agent | Responsibility |
 |---|---|
-| **Requirement Analyzer** | Đọc tài liệu đa định dạng, trích xuất requirement có cấu trúc, phát hiện gap/mâu thuẫn |
-| **Work Breakdown** | Chuyển requirement → backlog (epic/story/task), estimate, acceptance criteria |
-| **JIRA Sync** | Tạo/cập nhật issue qua API, idempotent (tránh tạo trùng), dry-run trước |
-| **Change Request Manager** | Diff requirement vs released docs, impact analysis, đề xuất change |
+| **Requirement Analyzer** | Read multi-format documents, extract structured requirements, detect gaps/contradictions |
+| **Work Breakdown** | Convert requirements → backlog (epic/story/task), estimate, acceptance criteria |
+| **JIRA Sync** | Create/update issues via API, idempotent (avoid duplicates), dry-run first |
+| **Change Request Manager** | Diff requirements vs. released docs, impact analysis, propose changes |
 
-## 4. Tích hợp JIRA
+## 4. JIRA Integration
 
-- **API**: JIRA Cloud REST API v3 (hoặc Data Center) qua token/OAuth.
-- **Idempotency**: gắn external key (vd requirement id) để không tạo trùng issue.
-- **Field mapping** cấu hình được: project key, issue type, epic link, components, labels, custom fields.
-- **Dry-run mode**: in ra danh sách thao tác sẽ thực hiện trước khi ghi thật.
-- **Audit**: log mọi thao tác ghi JIRA (ai duyệt, payload, kết quả).
+- **API**: JIRA Cloud REST API v3 (or Data Center) via token/OAuth.
+- **Idempotency**: attach an external key (e.g. requirement id) to avoid creating duplicate issues.
+- **Configurable field mapping**: project key, issue type, epic link, components, labels, custom fields.
+- **Dry-run mode**: print the list of operations to be performed before writing for real.
+- **Audit**: log every JIRA write operation (who approved, payload, result).
 
-## 5. Quản lý Change Request
+## 5. Change Request Management
 
-- Tận dụng kho **immutable** (docs/03): mỗi release có version + hash.
-- Khi có requirement/tài liệu mới → **diff ngữ nghĩa** với bản released gần nhất.
-- Output: danh sách thay đổi (added/modified/removed), impact (module/issue liên quan), đề xuất tạo/cập nhật issue change request.
+- Leverage the **immutable** corpus (docs/03): each release has a version + hash.
+- When a new requirement/document arrives → perform a **semantic diff** against the most recent released version.
+- Output: a list of changes (added/modified/removed), impact (related module/issue), and proposals to create/update change-request issues.
 
-## 6. Guardrails & rủi ro
+## 6. Guardrails & Risks
 
-- **Human-in-the-loop bắt buộc** trước khi ghi JIRA (không auto-create không kiểm soát).
-- **Idempotent + dry-run** để tránh spam/trùng issue.
-- **RBAC**: chỉ vai trò được phép mới sync JIRA.
-- **Bảo mật**: token JIRA trong Key Vault; không log secret; tôn trọng Zero Data Leak.
-- **Truy xuất nguồn**: mỗi task đề xuất phải dẫn chiếu đoạn requirement gốc (citation).
+- **Mandatory human-in-the-loop** before writing to JIRA (no uncontrolled auto-create).
+- **Idempotent + dry-run** to avoid spamming/duplicating issues.
+- **RBAC**: only authorized roles may sync to JIRA.
+- **Security**: JIRA token in Key Vault; never log secrets; respect Zero Data Leak.
+- **Source traceability**: every proposed task must reference the original requirement excerpt (citation).
 
-## 7. Phụ thuộc
+## 7. Dependencies
 
-- Cần **Phase 2 (multimodal)** để đọc tài liệu requirement đa định dạng.
-- Cần **Phase 8 (multi-agent)** làm khung orchestration.
-- Triển khai chi tiết: xem `prompts/phase-09-jira-requirement-agent/prompt.md`.
+- Requires **Phase 2 (multimodal)** to read multi-format requirement documents.
+- Requires **Phase 8 (multi-agent)** as the orchestration framework.
+- Detailed implementation: see `prompts/phase-09-jira-requirement-agent/prompt.md`.

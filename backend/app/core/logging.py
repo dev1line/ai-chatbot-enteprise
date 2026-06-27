@@ -17,7 +17,7 @@ def configure_logging(debug: bool = True) -> None:
     root.setLevel(level)
     root.handlers = [handler]
 
-    # Giảm nhiễu từ thư viện bên thứ ba ngay cả khi debug.
+    # Reduce noise from third-party libraries even in debug mode.
     for noisy in ("httpcore", "httpx", "prisma.engine._http", "prisma.engine._query"):
         logging.getLogger(noisy).setLevel(logging.WARNING)
 

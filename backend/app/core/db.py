@@ -1,7 +1,8 @@
 """Prisma client lifecycle.
 
-Lazy import để các test không cần DB (health, auth) chạy được mà không yêu cầu
-`prisma generate`. Client thật được tạo khi app startup (trong Docker đã generate + db push).
+Lazy import so that tests not requiring a DB (health, auth) can run without needing
+`prisma generate`. The real client is created at app startup (in Docker it has already
+been generated + db pushed).
 """
 from typing import Any
 

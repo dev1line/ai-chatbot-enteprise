@@ -25,11 +25,11 @@ async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
   const resp = await fetch(`${API_BASE}${path}`, { ...options, headers });
   if (resp.status === 401 || resp.status === 403) {
     clearToken();
-    throw new Error("Phiên đăng nhập không hợp lệ. Vui lòng đăng nhập lại.");
+    throw new Error("Your session is invalid. Please sign in again.");
   }
   if (!resp.ok) {
     const detail = await resp.json().catch(() => ({}));
-    throw new Error(detail.detail ?? `Lỗi ${resp.status}`);
+    throw new Error(detail.detail ?? `Error ${resp.status}`);
   }
   return resp.json() as Promise<T>;
 }
