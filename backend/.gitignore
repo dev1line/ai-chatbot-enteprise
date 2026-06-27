@@ -1,0 +1,16 @@
+
+# Python caches and virtualenv
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.ruff_cache/
+.venv/
+venv/
+
+# Tooling/runtime noise
+.coverage
+htmlcov/
+*.log
+
+# Prisma client artifacts
+prisma/generated/

@@ -12,6 +12,14 @@ class ConversationRepository:
     async def get(self, conversation_id: str) -> Any | None:
         return await get_db().conversation.find_unique(where={"id": conversation_id})
 
+    async def list_by_user(self, user_id: str, skip: int = 0, take: int = 20) -> list[Any]:
+        return await get_db().conversation.find_many(
+            where={"userId": user_id},
+            order={"createdAt": "desc"},
+            skip=skip,
+            take=take,
+        )
+
 
 class MessageRepository:
     async def add(
@@ -35,3 +43,25 @@ class MessageRepository:
             where={"conversationId": conversation_id},
             order={"createdAt": "asc"},
         )
+
+    async def list_paginated(
+        self,
+        conversation_id: str,
+        skip: int = 0,
+        take: int = 20,
+    ) -> list[Any]:
+        return await get_db().message.find_many(
+            where={"conversationId": conversation_id},
+            order={"createdAt": "asc"},
+            skip=skip,
+            take=take,
+        )
+
+    async def list_for_context(self, conversation_id: str, take: int = 30) -> list[Any]:
+        rows = await get_db().message.find_many(
+            where={"conversationId": conversation_id},
+            order={"createdAt": "desc"},
+            take=take,
+        )
+        rows.reverse()
+        return rows
